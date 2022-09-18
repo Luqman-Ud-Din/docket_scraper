@@ -143,7 +143,7 @@ def process_item_url(url):
 
 
 def process_pagination_url(url):
-    url = url_query_cleaner(url, ['backto', 'partial_ind', 'last_name', 'case_type', 'PageNo'])
+    url = url_query_cleaner(url, ['partial_ind', 'last_name', 'case_type', 'PageNo'])
 
     if '/cc/cconnect/' not in url:
         url = url.replace('courtconnect.courts.delaware.gov/', 'courtconnect.courts.delaware.gov/cc/cconnect/')
