@@ -64,7 +64,8 @@ SPIDER_MIDDLEWARES = {
 ITEM_PIPELINES = {
     # 'docket_scraper.pipelines.DocketScraperPipeline': 300,
     'docket_scraper.pipelines.AttachCrawlFieldsPipeline': 300,
-    'scrapy_redis.pipelines.RedisPipeline': 400,
+    'docket_scraper.pipelines.MongoDBPipeline': 500,
+    # 'scrapy_redis.pipelines.RedisPipeline': 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -93,3 +94,6 @@ DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
 SCHEDULER = "scrapy_redis.scheduler.Scheduler"
 SCHEDULER_PERSIST = True
 REDIS_HOST = 'docket-redis'
+
+MONGO_URI = 'mongodb://docket-mongo-db:27017'
+MONGO_DATABASE = 'dockets'

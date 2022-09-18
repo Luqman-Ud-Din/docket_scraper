@@ -4,20 +4,8 @@ from scrapy import Spider
 from scrapy_redis.spiders import RedisCrawlSpider
 
 
-class SpiderInitializerMixin:
-    def initialize_spider(self):
-        self.crawler_id = str(uuid.uuid4())
-        self.seen_item_ids = set()
-
-
-class BaseParseSpider(SpiderInitializerMixin, Spider):
+class BaseParseSpider(Spider):
     name = 'base-parse'
-
-    @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
-        spider = super(BaseParseSpider, cls).from_crawler(crawler, *args, **kwargs)
-        spider.initialize_spider()
-        return spider
 
     def parse(self, response, **kwargs):
         raise NotImplementedError
@@ -26,22 +14,28 @@ class BaseParseSpider(SpiderInitializerMixin, Spider):
         raise NotImplementedError
 
 
-class BaseCrawlSpider(SpiderInitializerMixin, RedisCrawlSpider):
+class BaseCrawlSpider(RedisCrawlSpider):
     name = 'base-crawl'
     parse_spider = BaseParseSpider()
 
-    @classmethod
-    def from_crawler(cls, crawler, *args, **kwargs):
-        spider = super(BaseCrawlSpider, cls).from_crawler(crawler, *args, **kwargs)
-        spider.initialize_spider()
-        return spider
+    def __init__(self, crawling_job_id=None, *args, **kwargs):
+        super(BaseCrawlSpider, self).__init__(*args, **kwargs)
+
+        if not crawling_job_id:
+            raise AttributeError('"crawling_job_id" is a required parameter.')
+
+        self.crawling_job_id = crawling_job_id
+        self.crawler_id = str(uuid.uuid4())
+        self.seen_item_ids = set()
 
     def parse(self, response, **kwargs):
-        for request_or_item in self._parse_response(response, None, {}):
-            yield request_or_item
+        yield from self._parse_response(response, None, {})
+
+    def parse_item_id(self, response):
+        return self.parse_spider.parse_id(response)
 
     def parse_item(self, response):
-        item_id = self.parse_spider.parse_id(response)
+        item_id = self.parse_item_id(response)
         if self.is_seen_item(item_id):
             return
 

@@ -2,3 +2,4 @@ Scrapy==2.6.2
 random-user-agent==1.0.1
 scrapy-redis==0.7.3
 redis==4.3.4
+pymongo==4.2.0
