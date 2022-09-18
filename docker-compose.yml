@@ -6,13 +6,23 @@ services:
     hostname: docket-redis
     container_name: docket-redis
     ports:
-      - "6379:6379"
+      - 6379:6379
+
+  mongo_db:
+    image: mongo:latest
+    hostname: docket-mongo-db
+    container_name: docket-mongo-db
+    volumes:
+      - ./data/db:/data/db
+    ports:
+      - 27017:27017
 
   crawler:
     build: .
-    command: scrapy crawl court-connect-crawl
+    command: scrapy crawl court-connect-crawl -a crawling_job_id=${CRAWLING_JOB_ID}
     depends_on:
-      - "redis"
+      - redis
+      - mongo_db
     links:
       - redis:localhost
 
@@ -20,7 +30,7 @@ services:
     build: .
     command: bash -c "python populate_court_connect_start_urls.py"
     depends_on:
-      - "redis"
-      - "crawler"
+      - redis
+      - crawler
     links:
       - redis:localhost
