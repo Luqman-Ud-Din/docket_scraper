@@ -96,4 +96,4 @@ SCHEDULER_PERSIST = True
 REDIS_HOST = 'docket-redis'
 
 MONGO_URI = 'mongodb://docket-mongo-db:27017'
-MONGO_DATABASE = 'dockets'
+MONGO_DATABASE = 'dockets-warehouse'
