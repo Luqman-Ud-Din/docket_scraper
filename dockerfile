@@ -10,6 +10,3 @@ RUN pip install -r requirements.txt
 RUN ls
 
 COPY . /app
-
-# ENTRYPOINT ["scrapy"]
-# CMD ["crawl", "court-connect-crawl"]
