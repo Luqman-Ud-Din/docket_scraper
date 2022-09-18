@@ -1,6 +1,5 @@
 import re
 from datetime import datetime
-from string import ascii_lowercase
 
 from scrapy.linkextractors import LinkExtractor
 from scrapy.spiders import Rule
@@ -152,15 +151,10 @@ def process_pagination_url(url):
     return url.replace('/ck_public_qry_doct.cp_dktrpt_frames', '/ck_public_qry_doct.cp_dktrpt_docket_report')
 
 
-start_url_t = 'https://courtconnect.courts.delaware.gov/cc/cconnect/ck_public_qry_cpty.cp_personcase_srch_details?' \
-              'backto=P&partial_ind=checked&last_name={}&case_type=ALL&PageNo=1'
-
-
 class CourtConnectCrawlSpider(BaseCrawlSpider):
     name = 'court-connect-crawl'
     parse_spider = CourtConnectParseParseSpider()
 
-    start_urls = [start_url_t.format(character) for character in ascii_lowercase]
     allowed_domains = ['courtconnect.courts.delaware.gov']
 
     item_css = '[href*="case_id="]'
@@ -181,5 +175,6 @@ class CourtConnectCrawlSpider(BaseCrawlSpider):
                 process_value=process_pagination_url
             ),
             process_request=reset_cookies,
-            callback='parse'),
+            callback='parse'
+        ),
     ]

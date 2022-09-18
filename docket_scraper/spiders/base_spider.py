@@ -1,14 +1,12 @@
 import uuid
-from datetime import datetime
 
 from scrapy import Spider
-from scrapy.spiders import CrawlSpider
+from scrapy_redis.spiders import RedisCrawlSpider
 
 
 class SpiderInitializerMixin:
     def initialize_spider(self):
-        self.crawl_id = str(uuid.uuid4())
-        self.crawl_start_time = datetime.utcnow().isoformat()
+        self.crawler_id = str(uuid.uuid4())
         self.seen_item_ids = set()
 
 
@@ -28,7 +26,7 @@ class BaseParseSpider(SpiderInitializerMixin, Spider):
         raise NotImplementedError
 
 
-class BaseCrawlSpider(SpiderInitializerMixin, CrawlSpider):
+class BaseCrawlSpider(SpiderInitializerMixin, RedisCrawlSpider):
     name = 'base-crawl'
     parse_spider = BaseParseSpider()
 

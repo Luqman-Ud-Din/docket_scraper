@@ -5,12 +5,13 @@
 
 
 # useful for handling different item types with a single interface
+from datetime import datetime
 
 
 class AttachCrawlFieldsPipeline(object):
     def process_item(self, item, spider):
         item = dict(item)
-        item['crawl_id'] = spider.crawl_id
+        item['crawler_id'] = spider.crawler_id
         item['spider_name'] = spider.name
-        item['crawl_start_time'] = spider.crawl_start_time
+        item['crawled_at'] = datetime.utcnow().isoformat()
         return item

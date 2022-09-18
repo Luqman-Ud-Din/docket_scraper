@@ -1,0 +1,26 @@
+version: "3.0"
+
+services:
+  redis:
+    image: redis
+    hostname: docket-redis
+    container_name: docket-redis
+    ports:
+      - "6379:6379"
+
+  crawler:
+    build: .
+    command: scrapy crawl court-connect-crawl
+    depends_on:
+      - "redis"
+    links:
+      - redis:localhost
+
+  url_scheduler:
+    build: .
+    command: bash -c "python populate_court_connect_start_urls.py"
+    depends_on:
+      - "redis"
+      - "crawler"
+    links:
+      - redis:localhost
