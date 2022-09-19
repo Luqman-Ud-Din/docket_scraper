@@ -5,6 +5,7 @@
 
 
 # useful for handling different item types with a single interface
+import copy
 from datetime import datetime
 
 import pymongo
@@ -41,5 +42,20 @@ class MongoDBPipeline:
         self.client.close()
 
     def process_item(self, item, spider):
-        self.db[f'job-{spider.crawling_job_id}'].insert_one(dict(item))
+        payload = copy.deepcopy(dict(item))
+
+        payload['crawled_at'] = datetime.fromisoformat(payload['crawled_at'])
+        payload['filing_date'] = datetime.fromisoformat(payload['filing_date'])
+
+        for entry in payload['entries']:
+            if not entry['filing_date']:
+                continue
+            entry['filing_date'] = datetime.fromisoformat(entry['filing_date'])
+
+        for party in payload['parties']:
+            if not party['end_date']:
+                continue
+            party['end_date'] = datetime.fromisoformat(party['end_date'])
+
+        self.db[f'job-{spider.crawling_job_id}'].insert_one(payload)
         return item
