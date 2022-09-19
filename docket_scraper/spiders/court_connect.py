@@ -81,8 +81,8 @@ class CourtConnectParseParseSpider(BaseParseSpider):
 
         parties = []
         for party_selector_1, party_selector_2 in zip(response.css(css_1), response.css(css_2)):
+            party_sequence = strip_text(party_selector_1.css('td:nth-child(1) ::text').extract())
             party_associates = strip_text(party_selector_1.css('td:nth-child(2) ::text').extract())
-            party_end_date = strip_text(party_selector_1.css('td:nth-child(3) ::text').extract())
             party_type = strip_text(party_selector_1.css('td:nth-child(4) ::text').extract())
             party_id = strip_text(party_selector_1.css('td:nth-child(5) ::text').extract())
             party_name = strip_text(party_selector_1.css('td:nth-child(6) ::text').extract())
@@ -92,13 +92,18 @@ class CourtConnectParseParseSpider(BaseParseSpider):
                 strip_text(party_selector_2.css('td:nth-child(4) ::text').extract())
             )
 
+            party_end_date = next(iter(strip_text(party_selector_1.css('td:nth-child(3) ::text').extract())), None)
+            if party_end_date:
+                party_end_date = datetime.strptime(party_end_date, '%d-%b-%Y').isoformat()
+
             party = {
+                'sequence': next(iter(party_sequence), None),
                 'associates': next(iter(party_associates), None),
-                'end_date': next(iter(party_end_date), None),
+                'end_date': party_end_date,
                 'type': next(iter(party_type), None),
                 'id': next(iter(party_id), None),
                 'name': next(iter(party_name), None),
-                'address': party_address or None,
+                'address': party_address if party_address.lower() != 'unavailable' else None,
                 'aliases': next(party_aliases, None)
             }
 
@@ -106,7 +111,13 @@ class CourtConnectParseParseSpider(BaseParseSpider):
 
         for party in parties:
             associates = strip_text((party['associates'] or '').split(','))
-            party['associates'] = [parties[int(associate) - 1]['id'] for associate in associates]
+            party['associates'] = [
+                next(filter(lambda p: p['sequence'] == associate, parties), {}).get('id')
+                for associate in associates
+            ]
+
+        for party in parties:
+            party.pop('sequence', None)
 
         return parties
 
@@ -128,7 +139,7 @@ class CourtConnectParseParseSpider(BaseParseSpider):
             entry = {
                 'filing_date': entry_filing_date or None,
                 'description': entry_description or None,
-                'party': next(iter(entry_party), '').strip(',') or None,
+                'party': strip_text(next(iter(entry_party), '').strip(',')) or None,
                 'monetary': entry_monetary or None,
                 'content': entry_content if entry_content.lower() != 'none.' else None
             }
